@@ -1,32 +1,41 @@
-import { Box, Text, theme } from '../../../theme/components';
+import { getCMSContent } from '../../../infra/cms/cmsProvider';
+import { Box, Link, Text, theme } from '../../../theme/components';
 
 export function Footer() {
-  return (
-    <Box
-      tag="footer"
-      styleSheet={{
-        backgroundColor: theme.colors.neutral.x800,
-      }}
-    >
-      <Box
-        styleSheet={{
-          overflow: "hidden",
-          maxWidth: theme.space.xcontainer_xl,
-          marginLeft: "auto",
-          marginRight: "auto",
-          paddingVertical: theme.space.x8,
-          paddingHorizontal: theme.space.x4,
-        }}
-      >
-        <Text
-          styleSheet={{
-            justifyContent: 'center',
-            color: theme.colors.neutral.x000
-          }}
+    const description = getCMSContent('globalContent.globalFooter.description');
+
+    return (
+        <Box
+            tag="footer"
+            styleSheet={{
+                backgroundColor: theme.colors.neutral.x800,
+            }}
         >
-          &copy; {new Date().getFullYear()} DevSoutinho. Todos os direitos reservados.
-        </Text>
-      </Box>
-    </Box>
-  )
+            <Box
+                styleSheet={{
+                    overflow: "hidden",
+                    maxWidth: theme.space.xcontainer_xl,
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                    paddingVertical: theme.space.x8,
+                    paddingHorizontal: theme.space.x4,
+                }}
+            >
+                <Text
+                    styleSheet={{
+                        justifyContent: 'center',
+                        color: theme.colors.neutral.x000
+                    }}
+                >
+                    &copy; {new Date().getFullYear()} {description}
+                </Text>
+
+                {process.env.NODE_ENV !== 'production' && (
+                    <Link href="/api/preview">
+                        Toggle Preview Mode
+                    </Link>
+                )}
+            </Box>
+        </Box>
+    )
 }

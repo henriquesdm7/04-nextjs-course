@@ -3,6 +3,10 @@ import { Footer } from '../../components/commons/Footer';
 import { Menu } from '../../components/commons/Menu';
 import { cmsService } from '../../infra/cms/cmsService';
 import { Box, Text, theme } from '../../theme/components';
+import { StructuredText, renderNodeRule } from 'react-datocms';
+import { isHeading } from 'datocms-structured-text-utils';
+import CMSProvider from '../../infra/cms/cmsProvider';
+import { pageHOC } from '../../components/wrappers/pageHOC';
 
 export async function getStaticPaths() {
     return {
@@ -14,7 +18,7 @@ export async function getStaticPaths() {
     };
 }
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params, preview }) {
     const { id } = params;
 
     const contentQuery = `
@@ -29,11 +33,14 @@ export async function getStaticProps({ params }) {
   `;
 
     const { data } = await cmsService({
-        query: contentQuery
+        query: contentQuery,
+        preview
     })
 
     return {
         props: {
+            cmsContent: data,
+
             id,
             title: data.contentFaqQuestion.title,
             content: data.contentFaqQuestion.content,
@@ -41,7 +48,7 @@ export async function getStaticProps({ params }) {
     }
 }
 
-export default function FAQQuestionScreen({ title, content }) {
+function FAQQuestionScreen({ cmsContent }) {
     return (
         <>
             <Head>
@@ -61,22 +68,27 @@ export default function FAQQuestionScreen({ title, content }) {
             >
                 <Box
                     styleSheet={{
-                        display: 'flex',
-                        gap: theme.space.x4,
-                        flexDirection: 'column',
                         width: '100%',
                         maxWidth: theme.space.xcontainer_lg,
                         marginHorizontal: 'auto',
                     }}
                 >
                     <Text tag="h1" variant="heading1">
-                        {title}
+                        {cmsContent.contentFaqQuestion.title}
                     </Text>
 
-                    {/* <Box dangerouslySetInnerHTML={{ __html: content }} /> */}
-                    <pre>
-                        {JSON.stringify(content, null, 2)}
-                    </pre>
+                    <StructuredText
+                        data={cmsContent.contentFaqQuestion.content}
+                        customNodeRules={[
+                            renderNodeRule(isHeading, ({ children, key, node }) => {
+                                return (
+                                    <Text key={key} tag={`h${node.level}`} variant={`heading${node.level}`}>
+                                        {children}
+                                    </Text>
+                                )
+                            })
+                        ]}
+                    />
                 </Box>
             </Box>
 
@@ -84,3 +96,5 @@ export default function FAQQuestionScreen({ title, content }) {
         </>
     )
 }
+
+export default pageHOC(FAQQuestionScreen);
